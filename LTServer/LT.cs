@@ -71,6 +71,7 @@ namespace LTServer
             return null;
         }
 
+        bool ready = false;
         ChromeDriver driver;
 
         public DownloadLimits GetDownloadLimits(string email, string password)
@@ -96,6 +97,7 @@ namespace LTServer
                     var elements = form.FindElements(By.ClassName("form-control"));
                     int it = 0;
                     Console.WriteLine("Logging in...");
+
                     foreach (var item in elements)
                     {
                         if (it == 0)
@@ -163,16 +165,14 @@ namespace LTServer
             return new DownloadLimits((int)GetVariableValue(variables, "download_limited"), (int)GetVariableValue(variables, "upload_limited"), (int)GetVariableValue(variables, "download_limit"), (int)GetVariableValue(variables, "upload_limit"), (int)GetVariableValue(variables, "cost"));
         }
 
-        public LicznikTransferu()
+        void Init()
         {
-
-
             ChromeDriverService service = ChromeDriverService.CreateDefaultService();
             service.EnableVerboseLogging = false;
             service.SuppressInitialDiagnosticInformation = true;
             service.HideCommandPromptWindow = true;
 
-            
+
 
             ChromeOptions options = new ChromeOptions();
             options.AddArguments("--headless");
@@ -189,26 +189,45 @@ namespace LTServer
             //using (var driver = new ChromeDriver(service, options))
             //{
 
-            
+
             try
             {
                 driver = new ChromeDriver(service, options);
             }
-            catch(InvalidOperationException e)
+            catch (InvalidOperationException e)
             {
                 Debug.Exception(e, "[Nieprawidlowa wersja Chrome]");
                 return;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.Exception(e, "[CreatingDriverException]");
                 return;
             }
-           
+
 
             //var limits = GetDownloadLimits(email, password);
-
+            ready = true;
             Console.WriteLine("Ready");
+        }
+
+        public LicznikTransferu()
+        {
+            Init();
+        }
+
+        ~LicznikTransferu()
+        {
+            Close();
+        }
+
+        public void Close()
+        {
+            if (ready)
+            {
+                driver.Close();
+                ready = false;
+            }
         }
 
         void ParseLimits(DownloadLimits limits)

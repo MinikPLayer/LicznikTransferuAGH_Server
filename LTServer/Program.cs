@@ -10,8 +10,15 @@ namespace LTServer
         {
             Debug.Log("Starting server...");
 
-            LTServer server = new LTServer(7154);
-            server.Join();
+            try
+            {
+                LTServer server = new LTServer(7154);
+                server.Join();
+            }
+            catch(Exception e)
+            {
+                Debug.Exception(e, "[FatalException - whole app]");
+            }
         }
     }
 }
